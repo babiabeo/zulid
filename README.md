@@ -27,10 +27,39 @@ Instead, herein is ULID:
 - No special characters (URL safe)
 - Monotonic sort order (correctly detects and handles the same millisecond)
 
-## Install
+## Installation
+
+First, fetch `zulid` using Zig's package manager. This will download and add the
+package to `build.zig.zon`:
 
 ```sh
-zig fetch https://github.com/babiabeo/zulid/archive/\<COMMIT\>.tar.gz --save
+zig fetch --save git+https://github.com/babiabeo/zulid
+```
+
+Then, update your `build.zig` in order to use the package:
+
+```zig
+const std = @import("std");
+
+pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+
+    const zulid = b.dependency("zulid", .{
+        .target = target,
+        .optimize = optimize,
+    }).module("zulid");
+
+    const exe = b.addExecutable(.{
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    exe.root_module.addImport("zulid", zulid);
+    
+    // ...
+}
 ```
 
 ## Usage
@@ -90,7 +119,7 @@ Below is the current specification of ULID as implemented in **zulid**.
 **Randomness**
 
 - 80 bits
-- Cryptographically secure source of randomness (default) 
+- Cryptographically secure source of randomness (default)
 
 ### Canonical String Representation
 

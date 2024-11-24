@@ -6,8 +6,11 @@ const assert = std.debug.assert;
 const milliTimestamp = std.time.milliTimestamp;
 
 pub const Error = error{
+    /// The encoded ULID is overflowed.
     Overflow,
+    /// The size is invalid.
     InvalidSize,
+    /// The encoded ULID contains invalid Crockford's base32 letters.
     InvalidBase32Char,
 };
 
@@ -15,16 +18,22 @@ inline fn to_u8(n: anytype) u8 {
     return @as(u8, @intCast(n & 0xFF));
 }
 
-/// The maximum valua of ULID.
+/// The Max ULID is a special form of ULID that is specified to have
+/// all 128 bits set to `1`. This UUID can be thought of as the inverse
+/// of `zero_ulid`.
 pub const max_ulid = ULID{
     .timestamp = std.math.maxInt(u48),
     .entropy = std.math.maxInt(u80),
 };
 
-/// The minimum value of ULID.
-pub const zero_ulid = ULID{ .timestamp = 0, .entropy = 0 };
+/// The Zero ULID is a special form of ULID that is specified to have
+/// all 128 bits set to `0`.
+pub const zero_ulid = ULID{
+    .timestamp = 0,
+    .entropy = 0,
+};
 
-/// A 128-bit Universally Unique Lexicographically Sortable Identifier (ULID)
+/// A 128-bit Universally Unique Lexicographically Sortable Identifier (ULID).
 ///
 /// The components are encoded as 16 octets. Each component is encoded with
 /// the Most Significant Byte first (network byte order).
@@ -43,13 +52,17 @@ pub const zero_ulid = ULID{ .timestamp = 0, .entropy = 0 };
 /// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 /// ```
 pub const ULID = struct {
+    /// The size of ULID in bytes.
     pub const bytes_size = 16;
+    /// The size of encoded ULID in bytes.
     pub const encoded_size = 26;
 
+    /// A 48-bit integer representing UNIX-time in milliseconds.
     timestamp: u48,
+    /// A random 80-bit integer.
     entropy: u80,
 
-    /// Generate a new ULID with an optional timestamp.
+    /// Generates a new ULID with an optional timestamp.
     pub fn new(timestamp: ?i64) ULID {
         const time: i64 = timestamp orelse milliTimestamp();
         const entropy = std.crypto.random.int(u80);
@@ -71,10 +84,15 @@ pub const ULID = struct {
     /// Encodes the ULID into the lexicographically sortable string
     /// using Crockford's Base32. E.g. `01AN4Z07BY79KA1307SR9X4MV3`
     ///
-    /// Format: `ttttttttttrrrrrrrrrrrrrrrr`
+    /// Canonical string representation:
+    ///
+    /// ```
+    /// ttttttttttrrrrrrrrrrrrrrrr
+    ///
     /// where
-    ///     `t` is Timestamp                (10 characters)
-    ///     `r` is Randomness (aka Entropy) (16 characters)
+    ///     t is Timestamp                (10 characters)
+    ///     r is Randomness (aka Entropy) (16 characters)
+    /// ```
     pub fn encode(ulid: ULID, dest: []u8) Error![]const u8 {
         if (dest.len < encoded_size) {
             return Error.InvalidSize;
@@ -147,7 +165,7 @@ pub const ULID = struct {
     /// Parses an encoded ULID. Returns:
     /// - `Error.InvalidSize` if `str.len` is less than 26.
     /// - `Error.Overflow` if the id is larger than the maximum ULID.
-    /// - `Error.InvalidBase32Char` if the id contains letters I, L, O, and U.
+    /// - `Error.InvalidBase32Char` if the id contains invalid base32's letters.
     pub fn decode(str: []const u8) Error!ULID {
         if (str.len < encoded_size) {
             return Error.InvalidSize;
