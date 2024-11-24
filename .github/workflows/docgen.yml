@@ -1,29 +1,46 @@
-name: docs
+name: Continuous Delivery
+
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+    branches: [main]
+
+  workflow_dispatch:
+
 jobs:
-  test:
+  emit:
     runs-on: ubuntu-latest
-    name: Publish docs
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: mlugg/setup-zig@v1
-      - run: zig build docs
-      - name: setup pages
-        uses: actions/configure-pages@v5
-      - name: upload artifacts
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Zig
+        uses: mlugg/setup-zig@v1
+        with:
+          version: 0.13.0
+
+      - name: Run `docs`
+        run: zig build docs
+
+      - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./zig-out/docs/
-      - name: deploy pages
+          path: zig-out/docs/
+
+  deploy:
+    needs: emit
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy artifact to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
