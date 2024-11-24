@@ -1,0 +1,17 @@
+.{
+    .name = "zulid",
+    .version = "0.1.0",
+    .dependencies = .{
+        .zbench = .{
+            .url = "https://github.com/hendriknielaender/zbench/archive/0c595abbd0c9fbd8bb0afe3c5bd832bf9f0aad42.tar.gz",
+            .hash = "1220b19e117897a42abc5e58633766a3be92f9ebade400116afea57957bebe41aed0",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE",
+        "README.md",
+    },
+}
