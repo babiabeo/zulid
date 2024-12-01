@@ -74,7 +74,7 @@ pub fn main() !void {
     const id = zulid.Generator.init(null);
     
     var out: [zulid.encoded_size]u8 = undefined;
-    try id.encode(&out[0..]);
+    id.encode(&out);
 
     std.debug.print("{s}", .{out});
 }
@@ -90,7 +90,7 @@ pub fn main() !void {
     const id = zulid.Generator.init(1732434408285);
     
     var out: [zulid.encoded_size]u8 = undefined;
-    _ = try id.encode(&out[0..]);
+    id.encode(&out);
 
     std.debug.print("{s}", .{out});
 }
