@@ -71,10 +71,10 @@ const std = @import("std");
 const zulid = @import("zulid");
 
 pub fn main() !void {
-    const id = zulid.ULID.new(null);
+    const id = zulid.Generator.init(null);
     
-    var out: [zulid.ULID.encoded_size]u8 = undefined;
-    _ = try id.encode(out[0..]);
+    var out: [zulid.encoded_size]u8 = undefined;
+    try id.encode(&out[0..]);
 
     std.debug.print("{s}", .{out});
 }
@@ -87,10 +87,10 @@ const std = @import("std");
 const zulid = @import("zulid");
 
 pub fn main() !void {
-    const id = zulid.ULID.new(1732434408285);
+    const id = zulid.Generator.init(1732434408285);
     
-    var out: [zulid.ULID.encoded_size]u8 = undefined;
-    _ = try id.encode(out[0..]);
+    var out: [zulid.encoded_size]u8 = undefined;
+    _ = try id.encode(&out[0..]);
 
     std.debug.print("{s}", .{out});
 }
@@ -161,8 +161,8 @@ Significant Byte first (network byte order).
 
 # TODO
 
-- [ ] Add `compare` function to compare 2 ULIDs.
-- [ ] Allow custom random number generator.
+- [x] Add compare function to compare 2 ULIDs.
+- [ ] Add monotonicity version.
 
 # License
 
